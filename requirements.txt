@@ -1,0 +1,10 @@
+streamlit
+torch
+byaldi
+transformers
+qwen-vl-utils
+pdf2image
+requests
+accelerate
+sentencepiece
+Pillow
