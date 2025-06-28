@@ -31,7 +31,8 @@ if uploaded_files:
     all_images, doc_names = process_and_index_pdfs(docs_retrieval_model, uploaded_files, INDEX_NAME)
 
     st.sidebar.success("Ready to answer questions!")
-    st.sidebar.info(f"**Indexed Documents:**\n- {'\n- '.join(doc_names)}")
+    doc_list = "\n- ".join(doc_names)
+    st.sidebar.info(f"**Indexed Documents:**\n- {doc_list}")
 
     st.header("Ask a Question")
     top_k = st.slider("Number of images to retrieve (Top-K)", min_value=1, max_value=10, value=3)
