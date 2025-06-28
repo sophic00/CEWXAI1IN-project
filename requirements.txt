@@ -1,4 +1,5 @@
 streamlit
+torchvision
 torch
 byaldi
 transformers

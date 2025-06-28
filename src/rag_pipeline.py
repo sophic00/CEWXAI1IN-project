@@ -1,5 +1,6 @@
 import streamlit as st
 from qwen_vl_utils import process_vision_info
+import torch
 
 def get_grouped_images(results, all_images):
     grouped_images = []
@@ -34,7 +35,8 @@ def answer_question(query, docs_retrieval_model, vl_model, vl_processor, all_ima
         else:
             image_inputs = process_vision_result
         text = vl_processor.apply_chat_template(chat_template, tokenize=False, add_generation_prompt=True)
-        inputs = vl_processor(text=[text], images=image_inputs, padding=True, return_tensors="pt").to("cuda")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        inputs = vl_processor(text=[text], images=image_inputs, padding=True, return_tensors="pt").to(device)
 
         generated_ids = vl_model.generate(**inputs, max_new_tokens=max_new_tokens)
         generated_ids_trimmed = [out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
