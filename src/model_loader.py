@@ -1,37 +1,62 @@
 import streamlit as st
 import torch
+
 from byaldi import RAGMultiModalModel
-from transformers import Qwen2VLForConditionalGeneration, Qwen2VLProcessor
+from rerankers import Reranker
+from transformers import (
+    Qwen2VLForConditionalGeneration,
+    Qwen2VLProcessor,
+    BitsAndBytesConfig,
+)
+
 
 @st.cache_resource
 def load_models():
-    with st.spinner("Loading Document Retrieval Model (ColPali)... This may take a moment."):
+    with st.spinner("Loading Document Retrieval Model (ColQwen2)…"):
         device_retrieval = "cuda" if torch.cuda.is_available() else "cpu"
         try:
             docs_retrieval_model = RAGMultiModalModel.from_pretrained(
-                "vidore/colpali-v1.3-merged", device=device_retrieval
+                "vidore/colqwen2-v1.0-merged", device=device_retrieval
             )
-        except TypeError:
-            docs_retrieval_model = RAGMultiModalModel.from_pretrained("vidore/colpali-v1.3-merged")
+        except Exception:
+            # Fallback to CPU if the device argument is not supported
+            docs_retrieval_model = RAGMultiModalModel.from_pretrained(
+                "vidore/colqwen2-v1.0-merged"
+            )
 
-    with st.spinner("Loading Vision Language Model (Qwen2-VL)... This is a large model."):
+    with st.spinner("Loading MonoVLM reranker…"):
+        device_rerank = "cuda" if torch.cuda.is_available() else "cpu"
+        ranker = Reranker("monovlm", device=device_rerank)
+
+    with st.spinner("Loading Vision-Language Model (Qwen2-VL)…"):
+        model_id = "Qwen/Qwen2.5-VL-7B-Instruct"
+
         if torch.cuda.is_available():
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+
             vl_model = Qwen2VLForConditionalGeneration.from_pretrained(
-                "Qwen/Qwen2-VL-7B-Instruct",
+                model_id,
+                device_map="auto",
                 torch_dtype=torch.bfloat16,
-                device_map="auto"
+                quantization_config=bnb_config,
             )
         else:
             st.warning(
-                "CUDA is not available. Falling back to CPU. The model may load slowly and inference \n"
-                "will be significantly slower. Consider enabling a GPU Hardware upgrade in your Space if possible."
+                "CUDA is not available. Falling back to CPU. Inference will be slow."
             )
-            vl_model = Qwen2VLForConditionalGeneration.from_pretrained(
-                "Qwen/Qwen2-VL-7B-Instruct",
-                torch_dtype=torch.float16 if torch.backends.mps.is_available() else torch.float32,
-                device_map={"": "cpu"}
-            )
+            vl_model = Qwen2VLForConditionalGeneration.from_pretrained(model_id)
 
-        vl_processor = Qwen2VLProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+        vl_processor = Qwen2VLProcessor.from_pretrained(
+            model_id,
+            min_pixels=224 * 224,
+            max_pixels=448 * 448,
+        )
 
-    return docs_retrieval_model, vl_model, vl_processor
+        vl_model.eval()
+
+    return docs_retrieval_model, ranker, vl_model, vl_processor

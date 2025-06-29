@@ -1,7 +1,7 @@
 streamlit
 torchvision
 torch
-byaldi
+git+https://github.com/sergiopaniego/byaldi.git@colsmolvlm-support
 transformers
 qwen-vl-utils
 pdf2image
@@ -9,3 +9,5 @@ requests
 accelerate
 sentencepiece
 Pillow
+bitsandbytes
+rerankers[monovlm]

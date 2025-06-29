@@ -1,19 +1,26 @@
 [project]
 name = "cewxai1in-project"
 version = "0.1.0"
-description = "Add your description here"
+description = "Multi Modal RAG"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.8.1",
-    "byaldi>=0.0.7",
+    "bitsandbytes>=0.46.0",
+    "byaldi",
+    "hf-transfer>=0.1.9",
     "pdf2image>=1.17.0",
+    "peft>=0.14.0",
     "pillow>=11.2.1",
     "qwen-vl-utils>=0.0.11",
     "requests>=2.32.4",
+    "rerankers>=0.10.0",
     "sentencepiece>=0.2.0",
     "streamlit>=1.46.1",
     "torch>=2.7.1",
     "torchvision>=0.22.1",
     "transformers>=4.47.1",
 ]
+
+[tool.uv.sources]
+byaldi = { git = "https://github.com/sergiopaniego/byaldi.git", rev = "colsmolvlm-support" }

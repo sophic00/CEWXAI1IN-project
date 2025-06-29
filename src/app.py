@@ -25,7 +25,7 @@ uploaded_files = st.sidebar.file_uploader(
     accept_multiple_files=True
 )
 
-docs_retrieval_model, vl_model, vl_processor = load_models()
+docs_retrieval_model, ranker, vl_model, vl_processor = load_models()
 
 if uploaded_files:
     all_images, doc_names = process_and_index_pdfs(docs_retrieval_model, uploaded_files, INDEX_NAME)
@@ -36,12 +36,16 @@ if uploaded_files:
 
     st.header("Ask a Question")
     top_k = st.slider("Number of images to retrieve (Top-K)", min_value=1, max_value=10, value=3)
+    rerank_k = st.slider("Number of top images after reranking", min_value=1, max_value=top_k, value=1)
     query = st.text_input("Enter your question about the document(s):", "What is the main topic of this document?")
 
     if st.button("Get Answer", type="primary"):
         if query:
             answer, retrieved_images = answer_question(
-                query, docs_retrieval_model, vl_model, vl_processor, all_images, INDEX_NAME, top_k=top_k
+                query, docs_retrieval_model, ranker, vl_model, vl_processor,
+                all_images, INDEX_NAME,
+                retrieval_top_k=top_k,
+                reranker_top_k=rerank_k
             )
 
             if answer and retrieved_images:
