@@ -1,5 +1,4 @@
 streamlit
-torchvision
 torch
 git+https://github.com/sergiopaniego/byaldi.git@colsmolvlm-support
 transformers

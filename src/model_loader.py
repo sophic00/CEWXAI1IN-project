@@ -19,7 +19,6 @@ def load_models():
                 "vidore/colqwen2-v1.0-merged", device=device_retrieval
             )
         except Exception:
-            # Fallback to CPU if the device argument is not supported
             docs_retrieval_model = RAGMultiModalModel.from_pretrained(
                 "vidore/colqwen2-v1.0-merged"
             )
@@ -29,7 +28,7 @@ def load_models():
         ranker = Reranker("monovlm", device=device_rerank)
 
     with st.spinner("Loading Vision-Language Model (Qwen2-VL)…"):
-        model_id = "Qwen/Qwen2.5-VL-7B-Instruct"
+        model_id = "Qwen/Qwen2-VL-7B-Instruct"
 
         if torch.cuda.is_available():
             bnb_config = BitsAndBytesConfig(

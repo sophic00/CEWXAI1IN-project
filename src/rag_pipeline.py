@@ -3,6 +3,7 @@ from qwen_vl_utils import process_vision_info
 import torch
 import base64
 from io import BytesIO
+from PIL import Image
 
 def get_grouped_images(results, all_images):
     grouped_images = []
@@ -16,6 +17,10 @@ def get_grouped_images(results, all_images):
 def images_to_base64(images):
     base64_images = []
     for img in images:
+        if img.width > 448 or img.height > 448:
+            img = img.copy()
+            img.thumbnail((448, 448), Image.Resampling.LANCZOS)
+
         buffer = BytesIO()
         img.save(buffer, format="JPEG")
         buffer.seek(0)
